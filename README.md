@@ -52,7 +52,31 @@ git -C "$HOME/.oh-my-zsh" checkout 74965c96098134b192f00084f966b4b02438a739
 git -C "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" checkout d05a1b00f9a61f9578bf9dc19b8451942dde8734
 ```
 
-启用的 `git` 插件由 Oh My Zsh 自带，无需单独安装。Powerlevel10k 首次启动可能下载 gitstatus 组件，需要网络。
+启用的 `git`、`history-substring-search` 插件由 Oh My Zsh 自带。另需安装自动建议和语法高亮插件：
+
+```bash
+for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+  if [ ! -e "$HOME/.oh-my-zsh/custom/plugins/$plugin" ]; then
+    git clone "https://github.com/zsh-users/$plugin.git" \
+      "$HOME/.oh-my-zsh/custom/plugins/$plugin"
+  fi
+done
+```
+
+按照 [自动建议插件安装说明](https://github.com/zsh-users/zsh-autosuggestions/blob/master/INSTALL.md) 和 [语法高亮插件安装说明](https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md) 安装；`.zshrc` 已启用它们，并将语法高亮放在插件列表最后。插件代码不纳入本仓库。Powerlevel10k 首次启动可能下载 gitstatus 组件，需要网络。
+
+#### 补全与快捷键
+
+| 操作 | 功能 |
+| --- | --- |
+| 输入命令 | 根据历史显示灰色建议；命令、路径等实时语法高亮 |
+| 光标在行尾时按 `→`，或按 `Ctrl+Space` | 接受灰色建议，不会直接执行 |
+| `Tab` | 补全命令、路径、Git 参数等；出现菜单后用方向键选择 |
+| `Shift+Tab` | 反向切换补全候选 |
+| 输入部分文字后按 `↑` / `↓` | 查找包含该文字的历史命令 |
+| `Ctrl+R` | 交互式搜索历史 |
+
+Tab 补全忽略大小写，并兼容连字符和下划线。灰色建议依赖本机历史，新机器尚无历史时可能没有建议；历史文件不会上传到仓库。
 
 ### 3. 安装字体
 
