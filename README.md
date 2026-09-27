@@ -87,7 +87,6 @@ exec zsh -l
 
 - 窗口尺寸 `1835 × 926` 来自原机器，可按新屏幕修改。
 - 透明度、模糊、窗口位置和下拉终端行为取决于 kitty 版本、窗口系统与合成器；macOS / 其他系统需适配字体安装位置和相关选项。
-- 原始 `quick-access-terminal.conf` 最后一行是 `kittty_override tab_bar_min_tabs=2`，其中 `kittty_override` 拼写有误。本仓库忠实保留备份；使用下拉终端前请在恢复后的文件中改为 `kitty_override`。
 - `.profile` 的 `GLFW_IM_MODULE=ibus` 来自原 Linux 输入法环境；新机器不使用 ibus 时可删除该行。
 
 ## 撤销一次恢复
