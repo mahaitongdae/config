@@ -13,6 +13,7 @@
 | `kitty/kitty.conf` | `~/.config/kitty/kitty.conf` | 字体、窗口、透明度、标签栏 |
 | `kitty/current-theme.conf` | `~/.config/kitty/current-theme.conf` | Catppuccin Mocha 配色 |
 | `kitty/quick-access-terminal.conf` | `~/.config/kitty/quick-access-terminal.conf` | 下拉终端配置 |
+| `kitty/toggle_qa_fullscreen.py` | `~/.config/kitty/toggle_qa_fullscreen.py` | 下拉终端 F11 全屏切换 kitten |
 
 ## 在新机器上恢复
 
@@ -101,7 +102,7 @@ bash restore.sh
 exec zsh -l
 ```
 
-脚本将上述 7 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
+脚本将上述 8 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
 
 完整退出并重新打开 kitty。若需要让 zsh 成为默认 shell，可执行 `chsh -s "$(command -v zsh)"`，然后注销并重新登录。
 
@@ -111,6 +112,7 @@ exec zsh -l
 
 - 窗口尺寸 `1835 × 926` 来自原机器，可按新屏幕修改。
 - 透明度、模糊、窗口位置和下拉终端行为取决于 kitty 版本、窗口系统与合成器；macOS / 其他系统需适配字体安装位置和相关选项。
+- 下拉终端的 F11 全屏切换由 `toggle_qa_fullscreen.py` 直接修改窗口像素尺寸实现，因为 X11 下 kitty 不支持运行时修改 panel 配置（`resize-os-window --action=os-panel` 会报错）。原始尺寸记录在 `$XDG_RUNTIME_DIR/kitty-qa-fullscreen.json`。
 - `.profile` 的 `GLFW_IM_MODULE=ibus` 来自原 Linux 输入法环境；新机器不使用 ibus 时可删除该行。
 
 ## 撤销一次恢复
@@ -134,7 +136,8 @@ git pull --ff-only
 cp "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.p10k.zsh" "$HOME/.profile" zsh/
 cp "$HOME/.config/kitty/kitty.conf" \
    "$HOME/.config/kitty/current-theme.conf" \
-   "$HOME/.config/kitty/quick-access-terminal.conf" kitty/
+   "$HOME/.config/kitty/quick-access-terminal.conf" \
+   "$HOME/.config/kitty/toggle_qa_fullscreen.py" kitty/
 git diff
 git add zsh/ kitty/
 git diff --cached

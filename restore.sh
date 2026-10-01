@@ -9,7 +9,7 @@ if [[ "$target_home" != /* || ! -d "$target_home" ]]; then
   exit 1
 fi
 files=(.zshrc .zprofile .p10k.zsh .profile)
-kitty_files=(kitty.conf current-theme.conf quick-access-terminal.conf)
+kitty_files=(kitty.conf current-theme.conf quick-access-terminal.conf toggle_qa_fullscreen.py)
 for file in "${files[@]}"; do test -f "$repo_dir/zsh/$file"; done
 for file in "${kitty_files[@]}"; do test -f "$repo_dir/kitty/$file"; done
 umask 077
