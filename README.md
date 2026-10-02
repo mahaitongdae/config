@@ -1,6 +1,8 @@
-# kitty 和 zsh 配置备份
+# kitty、zsh 和 tmux 配置备份
 
 2026-09-27 从 Linux 桌面环境备份。配置文件保持原样；没有包含历史记录、缓存、凭据、旧备份、字体二进制或软件本体。
+
+2026-10-01 新增 Oh My Tmux 配置，保留本机主题和快捷键设置。
 
 ## 文件对应关系
 
@@ -14,6 +16,8 @@
 | `kitty/current-theme.conf` | `~/.config/kitty/current-theme.conf` | Catppuccin Mocha 配色 |
 | `kitty/quick-access-terminal.conf` | `~/.config/kitty/quick-access-terminal.conf` | 下拉终端配置 |
 | `kitty/toggle_qa_fullscreen.py` | `~/.config/kitty/toggle_qa_fullscreen.py` | 下拉终端 F11 全屏切换 kitten |
+| `tmux/.tmux.conf` | `~/.tmux.conf` | Oh My Tmux 主配置 |
+| `tmux/.tmux.conf.local` | `~/.tmux.conf.local` | 本地主题、鼠标和剪贴板设置 |
 
 ## 在新机器上恢复
 
@@ -23,7 +27,7 @@ Ubuntu / Debian 可先安装基础工具：
 
 ```bash
 sudo apt update
-sudo apt install git zsh fontconfig unzip curl
+sudo apt install git zsh tmux fontconfig unzip curl
 git clone https://github.com/mahaitongdae/config.git "$HOME/config"
 cd "$HOME/config"
 ```
@@ -102,11 +106,23 @@ bash restore.sh
 exec zsh -l
 ```
 
-脚本将上述 8 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
+脚本将上述 10 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
 
 完整退出并重新打开 kitty。若需要让 zsh 成为默认 shell，可执行 `chsh -s "$(command -v zsh)"`，然后注销并重新登录。
 
 恢复目标使用标准 HOME 路径。如果新机器设置了 `ZDOTDIR`、`KITTY_CONFIG_DIRECTORY` 或自定义 `XDG_CONFIG_HOME`，请调整目标位置或取消相关覆盖。也可以用 `bash restore.sh /绝对路径/测试目录` 在已有的空目录中试恢复。
+
+### 5. 启动 tmux
+
+本仓库包含 Oh My Tmux 主配置和本地配置副本，无需额外克隆；已在 **tmux 3.4** 上加载验证。上游项目：https://github.com/gpakosz/.tmux 。保留文件头中的版权和许可声明，自定义设置请修改 `~/.tmux.conf.local`。
+
+```bash
+tmux new -s work
+# 已有 work 会话时：
+tmux attach -t work
+```
+
+前缀键为 `Ctrl+b` 或 `Ctrl+a`，随后按 `d` 分离会话，按 `r` 重新加载配置。尚未启动会话时，`tmux ls` 提示默认 socket 不存在是正常现象。恢复脚本只复制配置，不启动或恢复会话。
 
 ### 环境差异与已知问题
 
@@ -138,10 +154,11 @@ cp "$HOME/.config/kitty/kitty.conf" \
    "$HOME/.config/kitty/current-theme.conf" \
    "$HOME/.config/kitty/quick-access-terminal.conf" \
    "$HOME/.config/kitty/toggle_qa_fullscreen.py" kitty/
+cp "$HOME/.tmux.conf" "$HOME/.tmux.conf.local" tmux/
 git diff
-git add zsh/ kitty/
+git add zsh/ kitty/ tmux/
 git diff --cached
-git commit -m "Update kitty and zsh configuration"
+git commit -m "Update kitty, zsh and tmux configuration"
 git push
 ```
 

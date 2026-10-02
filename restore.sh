@@ -9,9 +9,11 @@ if [[ "$target_home" != /* || ! -d "$target_home" ]]; then
   exit 1
 fi
 files=(.zshrc .zprofile .p10k.zsh .profile)
+tmux_files=(.tmux.conf .tmux.conf.local)
 kitty_files=(kitty.conf current-theme.conf quick-access-terminal.conf toggle_qa_fullscreen.py)
 for file in "${files[@]}"; do test -f "$repo_dir/zsh/$file"; done
 for file in "${kitty_files[@]}"; do test -f "$repo_dir/kitty/$file"; done
+for file in "${tmux_files[@]}"; do test -f "$repo_dir/tmux/$file"; done
 umask 077
 backup_dir="$(mktemp -d "$target_home/.config-backup-$(date +%Y%m%d-%H%M%S)-XXXXXX")"
 restore_file() {
@@ -24,6 +26,7 @@ restore_file() {
   cp -- "$source" "$destination"
 }
 for file in "${files[@]}"; do restore_file "$repo_dir/zsh/$file" "$file"; done
+for file in "${tmux_files[@]}"; do restore_file "$repo_dir/tmux/$file" "$file"; done
 for file in "${kitty_files[@]}"; do
   restore_file "$repo_dir/kitty/$file" ".config/kitty/$file"
 done
