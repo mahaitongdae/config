@@ -10,7 +10,7 @@ if [[ "$target_home" != /* || ! -d "$target_home" ]]; then
 fi
 files=(.zshrc .zprofile .p10k.zsh .profile)
 tmux_files=(.tmux.conf .tmux.conf.local)
-kitty_files=(kitty.conf current-theme.conf quick-access-terminal.conf toggle_qa_fullscreen.py)
+kitty_files=(kitty.conf current-theme.conf quick-access-terminal.conf toggle_qa_fullscreen.py zoom_preserve_size.py)
 for file in "${files[@]}"; do test -f "$repo_dir/zsh/$file"; done
 for file in "${kitty_files[@]}"; do test -f "$repo_dir/kitty/$file"; done
 for file in "${tmux_files[@]}"; do test -f "$repo_dir/tmux/$file"; done

@@ -16,6 +16,7 @@
 | `kitty/current-theme.conf` | `~/.config/kitty/current-theme.conf` | Catppuccin Mocha 配色 |
 | `kitty/quick-access-terminal.conf` | `~/.config/kitty/quick-access-terminal.conf` | 下拉终端配置 |
 | `kitty/toggle_qa_fullscreen.py` | `~/.config/kitty/toggle_qa_fullscreen.py` | 下拉终端 F11 全屏切换 kitten |
+| `kitty/zoom_preserve_size.py` | `~/.config/kitty/zoom_preserve_size.py` | 字体缩放时保留下拉终端窗口尺寸的 kitten |
 | `tmux/.tmux.conf` | `~/.tmux.conf` | Oh My Tmux 主配置 |
 | `tmux/.tmux.conf.local` | `~/.tmux.conf.local` | 本地主题、鼠标和剪贴板设置 |
 
@@ -106,11 +107,20 @@ bash restore.sh
 exec zsh -l
 ```
 
-脚本将上述 10 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
+脚本将上述 11 个文件复制到 HOME 中，覆盖前把已有文件（含符号链接）移动到 `~/.config-backup-日期时间-随机后缀/`，并输出备份路径。它会覆盖 `.profile`，因为 `.zprofile` 依赖它；新机器如有额外环境变量，请从旧文件合并回来。脚本不安装软件、不更改默认 shell，也不会删除 kitty 目录中的其他文件。不要使用 `sudo` 运行。
 
 完整退出并重新打开 kitty。若需要让 zsh 成为默认 shell，可执行 `chsh -s "$(command -v zsh)"`，然后注销并重新登录。
 
 恢复目标使用标准 HOME 路径。如果新机器设置了 `ZDOTDIR`、`KITTY_CONFIG_DIRECTORY` 或自定义 `XDG_CONFIG_HOME`，请调整目标位置或取消相关覆盖。也可以用 `bash restore.sh /绝对路径/测试目录` 在已有的空目录中试恢复。
+
+#### kitty 字体缩放
+
+- `Ctrl` + `+` 或 `=`：当前窗口字号增加 1 磅。
+- `Ctrl` + `-`：当前窗口字号减少 1 磅。
+- `Ctrl` + `0`：恢复默认字号。
+- 同时支持小键盘加减号，以及 `Ctrl+Shift+-` / `Ctrl+Shift+Backspace`。
+
+`zoom_preserve_size.py` 在缩放后恢复 X11 下拉终端的像素尺寸，避免 kitty 按配置的 28 行重新计算高度而覆盖 F11 全屏尺寸。它不修改 F11 保存的原始窗口尺寸。此逻辑针对 kitty 0.49.1 / X11，其他平台需另行验证。
 
 ### 5. 启动 tmux
 
@@ -153,7 +163,8 @@ cp "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.p10k.zsh" "$HOME/.profile" zsh/
 cp "$HOME/.config/kitty/kitty.conf" \
    "$HOME/.config/kitty/current-theme.conf" \
    "$HOME/.config/kitty/quick-access-terminal.conf" \
-   "$HOME/.config/kitty/toggle_qa_fullscreen.py" kitty/
+   "$HOME/.config/kitty/toggle_qa_fullscreen.py" \
+   "$HOME/.config/kitty/zoom_preserve_size.py" kitty/
 cp "$HOME/.tmux.conf" "$HOME/.tmux.conf.local" tmux/
 git diff
 git add zsh/ kitty/ tmux/
