@@ -138,7 +138,7 @@ tmux attach -t work
 
 - 窗口尺寸 `1835 × 926` 来自原机器，可按新屏幕修改。
 - 透明度、模糊、窗口位置和下拉终端行为取决于 kitty 版本、窗口系统与合成器；macOS / 其他系统需适配字体安装位置和相关选项。
-- 下拉终端的 F11 全屏切换由 `toggle_qa_fullscreen.py` 直接修改窗口像素尺寸实现，因为 X11 下 kitty 不支持运行时修改 panel 配置（`resize-os-window --action=os-panel` 会报错）。原始尺寸记录在 `$XDG_RUNTIME_DIR/kitty-qa-fullscreen.json`。
+- 下拉终端的 F11 全屏切换由 `toggle_qa_fullscreen.py` 直接修改窗口像素尺寸实现，因为 X11 下 kitty 不支持运行时修改 panel 配置（`resize-os-window --action=os-panel` 会报错）。原始尺寸记录在 `$XDG_RUNTIME_DIR/kitty-qa-fullscreen.json`。F11 同时检查实际窗口高度；重新呼出或字号变化导致高度改变时，会直接全屏，并将当前尺寸作为新的还原尺寸，避免先缩小一次。
 - `.profile` 的 `GLFW_IM_MODULE=ibus` 来自原 Linux 输入法环境；新机器不使用 ibus 时可删除该行。
 
 ## 撤销一次恢复

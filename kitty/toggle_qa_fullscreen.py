@@ -29,15 +29,19 @@ def handle_result(args, answer, target_window_id, boss):
     except Exception:
         state = {}
 
-    if key in state:
-        # 已经是全屏，恢复原始尺寸
+    _, mon_h = glfw_primary_monitor_size()
+    _, y = get_os_window_pos(osw)
+    fullscreen_height = max(1, mon_h - y)
+    # Reopening the panel can resize it for the current font while leaving a
+    # saved F11 entry behind. Only restore when it is actually full height.
+    is_fullscreen = abs(sz['height'] - fullscreen_height) <= 2
+    if key in state and is_fullscreen:
+        # 实际仍是全屏，恢复原始尺寸
         width, height = state.pop(key)
     else:
         # 记录原始尺寸，然后拉伸到屏幕底部
         state[key] = [sz['width'], sz['height']]
-        _, mon_h = glfw_primary_monitor_size()
-        _, y = get_os_window_pos(osw)
-        width, height = sz['width'], mon_h - y
+        width, height = sz['width'], fullscreen_height
     set_os_window_size(osw, width, height)
 
     with open(STATE_FILE, 'w') as f:
