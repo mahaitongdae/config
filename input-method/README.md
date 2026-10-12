@@ -2,6 +2,8 @@
 
 2026-10-11 从本机配置整理。适用基线：Ubuntu 24.04.5、GNOME **X11**、kitty 0.49.1、Fcitx5 5.1.7。本机检查时 Fcitx5 正在运行，`fcitx5-remote` 返回 `2`、当前输入法为 `pinyin`；尚未执行自动化中文键入测试。Wayland 和其他发行版需另行验证。
 
+补充验证（2026-10-11）：Ubuntu 22.04.5、GNOME X11、Fcitx5 5.0.14。此机器仅执行 `im-config -n fcitx5` 后重新登录，Fcitx5 未自动启动，GNOME 启动了 IBus；添加下面的桌面自启动项后完成配置。当前会话已验证 kitty 内 `Ctrl+Space` → `nihao` → Space → Enter 实际输出「你好」。新增自启动项尚未经过下一次登录验证。
+
 ## 1. 安装依赖
 
 先按仓库主 README 安装 kitty，再安装输入法和中文字体：
@@ -10,6 +12,15 @@
 sudo apt update
 sudo apt install fcitx5 fcitx5-chinese-addons fcitx5-frontend-all \
   fcitx5-config-qt im-config fonts-noto-cjk
+im-config -n fcitx5
+```
+
+Ubuntu 22.04 没有 `fcitx5-frontend-all` 元包，改为明确安装各 frontend：
+
+```bash
+sudo apt install fcitx5 fcitx5-chinese-addons \
+  fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-gtk4 \
+  fcitx5-frontend-qt5 fcitx5-config-qt im-config fonts-noto-cjk
 im-config -n fcitx5
 ```
 
@@ -62,14 +73,24 @@ export GLFW_IM_MODULE=ibus
 
 ## 4. 自动启动与重新登录
 
-Ubuntu 通常通过 `im-config` 在桌面登录时启动输入法。注销并重新登录后先检查 `pgrep -a -x fcitx5`。如果没有自动启动，再按 [Fcitx 官方设置文档](https://fcitx-im.org/wiki/Setup_Fcitx_5/en) 添加桌面自启动：
+Ubuntu 通常通过 `im-config` 在桌面登录时启动输入法，但本次 Ubuntu 22.04 GNOME X11 实测未启动。注销并重新登录后，**先运行 `pgrep -a -x fcitx5`**。不要先运行 `fcitx5-remote`：它可能通过 D-Bus 按需启动 Fcitx5，掩盖登录时未启动的问题。如果没有自动启动，按 [Fcitx 官方设置文档](https://fcitx-im.org/wiki/Setup_Fcitx_5/en) 添加桌面自启动：
 
 ```bash
 mkdir -p "$HOME/.config/autostart"
 cp -n /usr/share/applications/org.fcitx.Fcitx5.desktop "$HOME/.config/autostart/"
 ```
 
-随后再次注销并重新登录，完全退出并重新打开 kitty（包括 quick-access 下拉终端）。仅重新加载 kitty 配置或 `exec zsh -l` 不会更新已运行 kitty 进程的环境。
+无需立即注销时，可先在当前图形桌面会话中启动：
+
+```bash
+fcitx5 -d
+pgrep -a -x fcitx5
+busctl --user list --no-pager | grep -E 'org.fcitx.Fcitx5|org.freedesktop.IBus'
+```
+
+确认 `org.freedesktop.IBus` 的进程是 `fcitx5`；本次启动 Fcitx5 后，它接管了该服务，GNOME 的 IBus daemon 随之退出。已打开的应用可能需要完全重启才能重新连接。
+
+随后再次注销并重新登录，先用 `pgrep` 验证自启动，再完全退出并重新打开 kitty（包括 quick-access 下拉终端）。仅重新加载 kitty 配置或 `exec zsh -l` 不会更新已运行 kitty 进程的环境。
 
 ## 5. 使用与验证
 
@@ -89,10 +110,12 @@ printf 'session=%s GLFW=%s GTK=%s QT=%s XMODIFIERS=%s\n' \
   "$XDG_SESSION_TYPE" "$GLFW_IM_MODULE" "$GTK_IM_MODULE" "$QT_IM_MODULE" "$XMODIFIERS"
 pgrep -a -x fcitx5
 fcitx5-remote
-fcitx5-remote -n
+busctl --user call org.fcitx.Fcitx5 /controller org.fcitx.Fcitx.Controller1 CurrentInputMethod
 busctl --user list --no-pager | grep -E 'org.fcitx.Fcitx5|org.freedesktop.IBus'
 fc-match ':lang=zh-cn'
 ```
+
+`fcitx5-remote -n` 在 Ubuntu 22.04 的 Fcitx5 5.0.14 中不可用；上面的 D-Bus 命令可查询当前输入法，中文激活时应返回 `s "pinyin"`。
 
 预期环境是 `x11 / ibus / fcitx / fcitx / @im=fcitx`。`fcitx5-remote` 的状态值：`0` 为关闭，`1` 为未激活，`2` 为已激活；英文状态下返回 `1` 也是正常的。此命令反映当前输入上下文，焦点变化会影响结果。中文字体应能匹配到 Noto Sans CJK SC。
 
@@ -100,6 +123,7 @@ fc-match ':lang=zh-cn'
 
 ## 排查与撤销
 
+- `Ctrl+Space` 无反应、无候选框：先检查 `pgrep -a -x fcitx5`，再检查上述 D-Bus 服务的进程名。如果 Fcitx5 没有运行，添加第 4 节的桌面自启动项并运行 `fcitx5 -d`，然后完全重启 kitty。
 - 没有拼音：运行 `fcitx5-configtool`，确认列表包含 Keyboard - English (US) 和 Pinyin；检查中文插件包是否安装。
 - 其他程序能输入、kitty 不行：检查 kitty 启动前是否已有 `GLFW_IM_MODULE=ibus`，以及 IBus 服务是否由 Fcitx5 提供。修改后重新登录并重启所有 kitty 进程。
 - D-Bus 连接失败：在本机图形桌面会话中检查，不要从无桌面会话的 SSH、容器或隔离环境判断输入法状态。
