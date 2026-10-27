@@ -1,4 +1,16 @@
-# kitty、zsh 和 tmux 配置备份
+# kitty、zsh、tmux 和 macOS 工具配置备份
+
+## macOS：SSH 图片粘贴
+
+[安装与使用说明](macos/ssh-image-paste/README.md)：在 iTerm2 中按 **Ctrl+Shift+V**，自动把剪贴板图片上传到当前 SSH 服务器，并将路径粘贴到远程 tmux 的 Claude Code / Codex 输入框。
+
+完成说明中的依赖和权限设置后，在仓库根目录运行：
+
+```sh
+python3 macos/ssh-image-paste/install.py
+```
+
+此工具单独安装；下方的 Linux 恢复脚本不会安装它。
 
 2026-09-27 从 Linux 桌面环境备份。配置文件保持原样；没有包含历史记录、缓存、凭据、旧备份、字体二进制或软件本体。
 
