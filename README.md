@@ -20,6 +20,25 @@ python3 macos/ssh-image-paste/install.py
 
 完整安装、配置恢复、快捷键和排查步骤见 [Fcitx5 + 拼音设置](input-method/README.md)。包含本机输入法设置快照，针对 Ubuntu 24.04 / GNOME X11。
 
+## Claude Code 状态栏
+
+`claude/statusline-command.sh` 是 Claude Code 的自定义状态栏脚本，依赖 `jq` 和 `git`，分支图标需要 Nerd Font。此工具单独安装；下方的恢复脚本不会安装它。
+
+```sh
+cp claude/statusline-command.sh ~/.claude/statusline-command.sh
+```
+
+然后在 `~/.claude/settings.json` 中加入：
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash ~/.claude/statusline-command.sh"
+}
+```
+
+更新备份时执行 `cp ~/.claude/statusline-command.sh claude/`。
+
 ## 文件对应关系
 
 | 仓库文件 | 恢复位置 | 用途 |
