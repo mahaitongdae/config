@@ -1,11 +1,11 @@
 #!/bin/bash
 # Claude Code status line in the style of ~/.config/starship.toml:
 # plain colored text, no backgrounds.
-#   dir on  branch [status] · ctx N% bar · in/out · cache N% · $cost · 5h N% · model
+#   dir on  branch [status] · ctx N% bar · in/out · cache N% · $cost · 5h N% · model effort
 input=$(cat)
 
 # Single jq call; fields joined by US (0x1f, non-whitespace so empty fields survive `read`).
-IFS=$'\x1f' read -r cwd model used tin tout cache cost five < <(echo "$input" | jq -r '
+IFS=$'\x1f' read -r cwd model used tin tout cache cost five effort think < <(echo "$input" | jq -r '
   def h: if . >= 1000000 then ((. / 100000 | floor) / 10 | tostring) + "M"
          elif . >= 10000 then ((. / 1000 | round | tostring) + "k")
          elif . >= 1000 then ((. / 100 | floor) / 10 | tostring) + "k"
@@ -21,7 +21,9 @@ IFS=$'\x1f' read -r cwd model used tin tout cache cost five < <(echo "$input" | 
          | if $d > 0 then ($u.cache_read_input_tokens / $d * 100 | round) else null end
        else null end),
       .cost.total_cost_usd,
-      (.rate_limits.five_hour | (.used_percentage // .utilization))
+      (.rate_limits.five_hour | (.used_percentage // .utilization)),
+      (.effort.level // .effort),
+      (.thinking.enabled)
     ] | map(if . == null then "" else tostring end) | join("\u001f")' 2>/dev/null)
 cwd=${cwd:-$PWD}
 
@@ -78,7 +80,17 @@ if [ -n "$five" ]; then
   parts+=("5h $(c "$(pct_color "$fpct")")${fpct}%$R")
 fi
 
-[ -n "$model" ] && parts+=("$(c "1;34")$model$R")
+# model, followed by thinking effort (dim for low/medium, magenta for high+; "think off" when disabled)
+if [ -n "$model" ]; then
+  m="$(c "1;34")$model$R"
+  if [ "$think" = "false" ]; then
+    m+=" $(c 90)think off$R"
+  elif [ -n "$effort" ]; then
+    case $effort in low|medium) ec=90 ;; high) ec=35 ;; *) ec="1;35" ;; esac
+    m+=" $(c "$ec")$effort$R"
+  fi
+  parts+=("$m")
+fi
 
 out=$line1
 for p in "${parts[@]}"; do out+="$DOT$p"; done
